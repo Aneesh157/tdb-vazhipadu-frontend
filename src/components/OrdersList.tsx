@@ -46,6 +46,17 @@ export const OrdersList: React.FC = () => {
   const [isCancelling, setIsCancelling] = useState<boolean>(false);
   const [cancelError, setCancelError] = useState<string | null>(null);
 
+  // Close cancellation modal on Escape key press
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && orderToCancel && !isCancelling) {
+        setOrderToCancel(null);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [orderToCancel, isCancelling]);
+
   // Sync state to URL search parameters
   const updateUrlParams = useCallback(
     (status: string, date: string, phone: string, page: number) => {
