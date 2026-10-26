@@ -1,11 +1,12 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Temple, Offering } from './types';
-import { getTemples, getOfferings } from './api';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { Temple, Offering, Order } from './types';
+import { getTemples, getOfferings, createOrder } from './api';
 import { Navbar } from './components/Navbar';
 import { TempleSelector } from './components/TempleSelector';
 import { OfferingsList } from './components/OfferingsList';
 import { Cart } from './components/Cart';
 import { OrderForm, OrderFormData } from './components/OrderForm';
+import { OrderConfirmation } from './components/OrderConfirmation';
 import { useCart } from './hooks/useCart';
 
 export const App: React.FC = () => {
@@ -42,8 +43,15 @@ export const App: React.FC = () => {
     offeringDate: '',
   });
 
+  // Order placement state & double-click prevention
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [confirmedOrder, setConfirmedOrder] = useState<Order | null>(null);
+  const isSubmittingRef = useRef<boolean>(false);
+
   const handleFormFieldChange = (field: keyof OrderFormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+    if (submitError) setSubmitError(null);
   };
 
   // Fetch initial temples
@@ -60,7 +68,7 @@ export const App: React.FC = () => {
           }
         }
       } catch {
-        // Fallback handled
+        // Fallback
       } finally {
         if (isMounted) setIsTemplesLoading(false);
       }
@@ -104,65 +112,137 @@ export const App: React.FC = () => {
     setSearchQuery('');
   };
 
-  const handleFormSubmit = (e: React.FormEvent) => {
+  // Order placement with double-click prevention and failure retention
+  const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handled in P3 for mock API placement
+
+    // Prevent concurrent/double submission
+    if (isSubmittingRef.current || isSubmitting) {
+      return;
+    }
+    if (cartItems.length === 0) {
+      setSubmitError('Cart is empty. Please select at least one offering.');
+      return;
+    }
+
+    isSubmittingRef.current = true;
+    setIsSubmitting(true);
+    setSubmitError(null);
+
+    try {
+      const newOrder = await createOrder({
+        templeId: selectedTempleId,
+        devoteeName: formData.devoteeName,
+        phoneNumber: formData.phoneNumber,
+        nakshatra: formData.nakshatra,
+        offeringDate: formData.offeringDate,
+        items: cartItems.map((item) => ({
+          offeringId: item.offering.id,
+          quantity: item.quantity,
+        })),
+      });
+
+      // On success: empty cart, show confirmation screen, and scroll to top
+      clearCart();
+      setConfirmedOrder(newOrder);
+      if (typeof window !== 'undefined' && window.scrollTo) {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+      // Reset form data for subsequent bookings
+      setFormData({
+        devoteeName: '',
+        phoneNumber: '',
+        nakshatra: '',
+        offeringDate: '',
+      });
+    } catch (err: unknown) {
+      // On failure: cart and form values are preserved!
+      const errorMsg =
+        err instanceof Error
+          ? err.message
+          : 'Failed to place offering order. Please retry.';
+      setSubmitError(errorMsg);
+    } finally {
+      setIsSubmitting(false);
+      isSubmittingRef.current = false;
+    }
+  };
+
+  const handleResetAfterConfirmation = () => {
+    setConfirmedOrder(null);
+    setSubmitError(null);
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-amber-50/40 via-slate-50 to-slate-100 flex flex-col font-sans text-slate-900">
       <Navbar
         activeTab={activeTab}
-        onTabChange={setActiveTab}
+        onTabChange={(tab) => {
+          setActiveTab(tab);
+          if (tab === 'booking' && confirmedOrder) {
+            setConfirmedOrder(null);
+          }
+        }}
         cartCount={totalCount}
       />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
         {activeTab === 'booking' ? (
-          <>
-            {/* Sacred Temple Header & Selector */}
-            <TempleSelector
-              temples={temples}
-              selectedTempleId={selectedTempleId}
-              onSelectTemple={handleSelectTemple}
-              isLoading={isTemplesLoading}
+          confirmedOrder ? (
+            /* P3 Confirmation Screen on Order Placement Success */
+            <OrderConfirmation
+              order={confirmedOrder}
+              onReset={handleResetAfterConfirmation}
             />
+          ) : (
+            <>
+              {/* Sacred Temple Header & Selector */}
+              <TempleSelector
+                temples={temples}
+                selectedTempleId={selectedTempleId}
+                onSelectTemple={handleSelectTemple}
+                isLoading={isTemplesLoading}
+              />
 
-            {/* Main Booking Section: Offerings List on Left (8 cols), Cart & Form on Right (4 cols) */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-              {/* Left Column: Offerings Catalog */}
-              <div className="lg:col-span-7 xl:col-span-8 space-y-6">
-                <OfferingsList
-                  offerings={offerings}
-                  isLoading={isOfferingsLoading}
-                  error={offeringsError}
-                  onRetry={() => loadOfferings(selectedTempleId)}
-                  onAddToCart={addToCart}
-                  searchQuery={searchQuery}
-                  onSearchChange={setSearchQuery}
-                  cartQuantities={cartQuantities}
-                />
+              {/* Main Booking Section: Offerings List on Left (8 cols), Cart & Form on Right (4 cols) */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                {/* Left Column: Offerings Catalog */}
+                <div className="lg:col-span-7 xl:col-span-8 space-y-6">
+                  <OfferingsList
+                    offerings={offerings}
+                    isLoading={isOfferingsLoading}
+                    error={offeringsError}
+                    onRetry={() => loadOfferings(selectedTempleId)}
+                    onAddToCart={addToCart}
+                    searchQuery={searchQuery}
+                    onSearchChange={setSearchQuery}
+                    cartQuantities={cartQuantities}
+                  />
+                </div>
+
+                {/* Right Column: Cart & Devotee Booking Form */}
+                <div className="lg:col-span-5 xl:col-span-4 space-y-6 sticky top-24">
+                  <Cart
+                    items={cartItems}
+                    totalAmount={totalAmount}
+                    onUpdateQuantity={updateQuantity}
+                    onRemoveItem={removeFromCart}
+                    onClearCart={clearCart}
+                    isSubmitting={isSubmitting}
+                  />
+
+                  <OrderForm
+                    formData={formData}
+                    onChange={handleFormFieldChange}
+                    onSubmit={handlePlaceOrder}
+                    isSubmitting={isSubmitting}
+                    submitError={submitError}
+                    hasItems={cartItems.length > 0}
+                  />
+                </div>
               </div>
-
-              {/* Right Column: Cart & Devotee Booking Form */}
-              <div className="lg:col-span-5 xl:col-span-4 space-y-6 sticky top-24">
-                <Cart
-                  items={cartItems}
-                  totalAmount={totalAmount}
-                  onUpdateQuantity={updateQuantity}
-                  onRemoveItem={removeFromCart}
-                  onClearCart={clearCart}
-                />
-
-                <OrderForm
-                  formData={formData}
-                  onChange={handleFormFieldChange}
-                  onSubmit={handleFormSubmit}
-                  hasItems={cartItems.length > 0}
-                />
-              </div>
-            </div>
-          </>
+            </>
+          )
         ) : (
           <div className="p-8 text-center text-slate-500">
             Orders portal will be loaded in P4.
