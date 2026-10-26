@@ -317,6 +317,8 @@ export const OrderForm: React.FC<OrderFormProps> = ({
             id="place-order-button"
             type="submit"
             disabled={!hasItems || isSubmitting}
+            aria-disabled={!hasItems || isSubmitting}
+            aria-busy={isSubmitting}
             className={`w-full py-3 px-6 rounded-xl font-semibold text-sm transition-all flex items-center justify-center gap-2 shadow-sm ${
               !hasItems || isSubmitting
                 ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
