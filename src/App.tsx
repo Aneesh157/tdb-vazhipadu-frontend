@@ -221,27 +221,55 @@ export const App: React.FC = () => {
                   />
                 </div>
 
-                {/* Right Column: Cart & Devotee Booking Form */}
-                <div className="lg:col-span-5 xl:col-span-4 space-y-6 sticky top-24">
-                  <Cart
-                    items={cartItems}
-                    totalAmount={totalAmount}
-                    onUpdateQuantity={updateQuantity}
-                    onRemoveItem={removeFromCart}
-                    onClearCart={clearCart}
-                    isSubmitting={isSubmitting}
-                  />
+              {/* Right Column: Cart & Devotee Booking Form */}
+              <div
+                id="booking-form-section"
+                className="lg:col-span-5 xl:col-span-4 space-y-6 sticky top-24"
+              >
+                <Cart
+                  items={cartItems}
+                  totalAmount={totalAmount}
+                  onUpdateQuantity={updateQuantity}
+                  onRemoveItem={removeFromCart}
+                  onClearCart={clearCart}
+                  isSubmitting={isSubmitting}
+                />
 
-                  <OrderForm
-                    formData={formData}
-                    onChange={handleFormFieldChange}
-                    onSubmit={handlePlaceOrder}
-                    isSubmitting={isSubmitting}
-                    submitError={submitError}
-                    hasItems={cartItems.length > 0}
-                  />
-                </div>
+                <OrderForm
+                  formData={formData}
+                  onChange={handleFormFieldChange}
+                  onSubmit={handlePlaceOrder}
+                  isSubmitting={isSubmitting}
+                  submitError={submitError}
+                  hasItems={cartItems.length > 0}
+                />
               </div>
+            </div>
+
+            {/* Mobile Bottom Quick-Action Bar (visible only when cart has items on mobile) */}
+            {cartItems.length > 0 && (
+              <aside
+                aria-label="Mobile Cart Summary"
+                className="lg:hidden fixed bottom-4 inset-x-4 z-30"
+              >
+                <a
+                  href="#booking-form-section"
+                  className="w-full bg-slate-900/95 backdrop-blur-md text-white p-3.5 rounded-2xl shadow-xl border border-slate-700/60 flex items-center justify-between transition-transform active:scale-[0.98]"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <span className="w-7 h-7 rounded-full bg-amber-500 text-slate-950 font-bold text-xs flex items-center justify-center">
+                      {totalCount}
+                    </span>
+                    <span className="text-xs text-slate-300">
+                      Total: <strong className="text-white text-sm">₹{totalAmount}</strong>
+                    </span>
+                  </div>
+                  <span className="text-xs font-semibold text-amber-400 underline">
+                    Complete Devotee Details ↓
+                  </span>
+                </a>
+              </aside>
+            )}
             </>
           )
         ) : (
