@@ -7,6 +7,7 @@ import { OfferingsList } from './components/OfferingsList';
 import { Cart } from './components/Cart';
 import { OrderForm, OrderFormData } from './components/OrderForm';
 import { OrderConfirmation } from './components/OrderConfirmation';
+import { OrdersList } from './components/OrdersList';
 import { useCart } from './hooks/useCart';
 
 export const App: React.FC = () => {
@@ -244,9 +245,8 @@ export const App: React.FC = () => {
             </>
           )
         ) : (
-          <div className="p-8 text-center text-slate-500">
-            Orders portal will be loaded in P4.
-          </div>
+          /* P4 Temple Staff Orders Management Screen */
+          <OrdersList />
         )}
       </main>
 
