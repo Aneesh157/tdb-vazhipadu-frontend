@@ -23,9 +23,10 @@ export const OfferingsList: React.FC<OfferingsListProps> = ({
   onSearchChange,
   cartQuantities = {},
 }) => {
-  // Filter offerings by name matching searchQuery
+  // Filter offerings by name matching searchQuery (case-insensitive and trimmed)
+  const trimmedQuery = searchQuery.trim().toLowerCase();
   const filteredOfferings = offerings.filter((offering) =>
-    offering.name.toLowerCase().includes(searchQuery.toLowerCase())
+    offering.name.toLowerCase().includes(trimmedQuery)
   );
 
   return (
