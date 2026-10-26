@@ -45,8 +45,14 @@ export function validateOrderForm(data: OrderFormData): FormErrors {
     errors.devoteeName = "Name must be at least 2 characters";
   }
 
-  // Phone number validation: Indian phone numbers (10 digits, starts with 6-9)
-  const cleanPhone = data.phoneNumber.replace(/[\s-]/g, '');
+  // Phone number validation: Indian phone numbers (10 digits, starts with 6-9, supports optional +91 or 0 prefix)
+  let cleanPhone = data.phoneNumber.replace(/[\s-]/g, '');
+  if (cleanPhone.startsWith('+91')) {
+    cleanPhone = cleanPhone.slice(3);
+  } else if (cleanPhone.startsWith('0') && cleanPhone.length === 11) {
+    cleanPhone = cleanPhone.slice(1);
+  }
+
   if (!cleanPhone) {
     errors.phoneNumber = 'Phone number is required';
   } else if (!/^[6-9]\d{9}$/.test(cleanPhone)) {
