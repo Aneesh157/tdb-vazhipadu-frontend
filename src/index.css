@@ -10,8 +10,19 @@
   font-family: 'Cinzel', serif;
 }
 
-/* Accessible focus styles */
+/* Accessible high-contrast focus rings compliant with WCAG 2.1 AA */
 :focus-visible {
-  outline: 2px solid #ea580c;
+  outline: 2px solid #b45309;
   outline-offset: 2px;
+}
+
+/* Ensure smooth scrolling across elements */
+html {
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+}
+
+body {
+  overflow-x: hidden;
+  width: 100%;
 }
