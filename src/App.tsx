@@ -142,9 +142,12 @@ export const App: React.FC = () => {
         })),
       });
 
-      // On success: empty cart and show confirmation screen
+      // On success: empty cart, show confirmation screen, and scroll to top
       clearCart();
       setConfirmedOrder(newOrder);
+      if (typeof window !== 'undefined' && window.scrollTo) {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
       // Reset form data for subsequent bookings
       setFormData({
         devoteeName: '',
