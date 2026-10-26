@@ -177,10 +177,11 @@ export const OrderForm: React.FC<OrderFormProps> = ({
             <p
               id="devotee-name-error"
               role="alert"
+              aria-live="polite"
               className="mt-1 text-xs text-red-600 font-medium flex items-center gap-1"
             >
-              <AlertCircle className="w-3 h-3" />
-              <span>{errors.devoteeName}</span>
+              <AlertCircle className="w-3 h-3" aria-hidden="true" />
+              <span role="alert">{errors.devoteeName}</span>
             </p>
           )}
         </div>
@@ -216,10 +217,11 @@ export const OrderForm: React.FC<OrderFormProps> = ({
             <p
               id="phone-number-error"
               role="alert"
+              aria-live="polite"
               className="mt-1 text-xs text-red-600 font-medium flex items-center gap-1"
             >
-              <AlertCircle className="w-3 h-3" />
-              <span>{errors.phoneNumber}</span>
+              <AlertCircle className="w-3 h-3" aria-hidden="true" />
+              <span role="alert">{errors.phoneNumber}</span>
             </p>
           )}
         </div>
@@ -260,10 +262,11 @@ export const OrderForm: React.FC<OrderFormProps> = ({
             <p
               id="nakshatra-error"
               role="alert"
+              aria-live="polite"
               className="mt-1 text-xs text-red-600 font-medium flex items-center gap-1"
             >
-              <AlertCircle className="w-3 h-3" />
-              <span>{errors.nakshatra}</span>
+              <AlertCircle className="w-3 h-3" aria-hidden="true" />
+              <span role="alert">{errors.nakshatra}</span>
             </p>
           )}
         </div>
@@ -299,10 +302,11 @@ export const OrderForm: React.FC<OrderFormProps> = ({
             <p
               id="offering-date-error"
               role="alert"
+              aria-live="polite"
               className="mt-1 text-xs text-red-600 font-medium flex items-center gap-1"
             >
-              <AlertCircle className="w-3 h-3" />
-              <span>{errors.offeringDate}</span>
+              <AlertCircle className="w-3 h-3" aria-hidden="true" />
+              <span role="alert">{errors.offeringDate}</span>
             </p>
           )}
         </div>
